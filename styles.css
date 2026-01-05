@@ -4,6 +4,14 @@
     box-sizing: border-box;
 }
 
+:root {
+    --glass-bg: rgba(20, 22, 26, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.15);
+    --glass-blur: 20px;
+    --radius: 24px;
+    --glass-hover: rgba(255, 255, 255, 0.10);
+}
+
 body {
     font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background-color: #36393f;
@@ -15,132 +23,89 @@ body {
     color: #dcddde;
     display: flex;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
+    padding: 8px;
+    gap: 8px;
+}
+
+.server-list,
+.channel-list,
+.main-content,
+.friends-main-view {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.mobile-back-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    margin-right: 12px;
+    cursor: pointer;
 }
 
 @media (max-width: 768px) {
     body {
-        flex-direction: row;
-        height: 100dvh;
-        overflow: hidden;
-        background-attachment: scroll;
+        padding: 0;
+        gap: 0;
+    }
+
+    .server-list, .channel-list, .main-content {
+        border-radius: 0;
+        border: none;
+        height: 100%;
+        background: rgba(20, 22, 26, 0.65);
     }
 
     .server-list {
+        display: flex;
         width: 72px;
-        height: 100dvh;
-        flex-direction: column;
-        overflow-x: hidden;
-        overflow-y: auto;
-        margin: 0;
-        border-radius: 0;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 1300;
-    }
-
-    .server-icon {
-        flex: 0 0 auto;
-    }
-
-    .server-separator {
-        width: 32px;
-        height: 2px;
     }
 
     .channel-list {
-        position: fixed;
-        top: 0;
-        left: 72px;
-        height: 100dvh;
-        width: calc(100vw - 72px);
-        margin: 0;
-        border-radius: 0;
-        transform: translateX(-110%);
-        transition: transform 0.2s ease;
-        z-index: 1200;
-    }
-
-    .channel-list.mobile-open {
-        transform: translateX(0);
-    }
-
-    .main-content {
-        width: 100%;
-        min-height: 0;
-        height: 100dvh;
-        overflow: hidden;
-        margin-left: 72px;
-    }
-
-    .friends-main-view {
-        position: fixed;
-        top: 0;
-        left: 72px;
-        width: calc(100vw - 72px);
-        height: 100dvh;
-        margin: 0;
-        border-radius: 0;
-        z-index: 1400;
-        display: none;
-    }
-
-    #mobileCloseFriendsBtn {
-        display: flex !important;
-    }
-
-    .chat-header,
-    .messages {
-        margin: 8px;
-    }
-
-    .message-input-container {
-        padding: 10px 8px 14px 8px;
-    }
-
-    #mobileMenuBtn {
-        display: flex !important;
-    }
-
-    .mobile-overlay {
-        position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 72px;
-        background: rgba(0,0,0,0.55);
-        z-index: 1100;
-    }
-
-    .mobile-add-friend-btn {
-        background: rgba(255, 255, 255, 0.10);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        color: #fff;
-        padding: 8px 10px;
-        border-radius: 999px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        flex: 0 0 auto;
-    }
-
-    .dm-search-bar {
         display: flex;
-        align-items: center;
-        gap: 8px;
+        width: calc(100% - 72px);
     }
 
-    .dm-search-bar input {
-        flex: 1;
-        min-width: 0;
+    .main-content, .friends-main-view {
+        display: none !important;
     }
-}
 
-:root {
-    --glass-bg: rgba(255, 255, 255, 0.16);
-    --glass-border: rgba(255, 255, 255, 0.28);
-    --glass-hover: rgba(255, 255, 255, 0.10);
+    body.mobile-chat-open .server-list {
+        display: none !important;
+    }
+
+    body.mobile-chat-open .channel-list {
+        display: none !important;
+    }
+
+    body.mobile-chat-open .main-content,
+    body.mobile-chat-open .friends-main-view {
+        display: flex !important;
+        width: 100%;
+    }
+
+    .mobile-back-btn {
+        display: block;
+    }
+
+    .friends-tabs {
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .friends-tab {
+        white-space: nowrap;
+        padding: 6px 10px;
+        font-size: 12px;
+    }
 }
 
 /* Server List Styles */
