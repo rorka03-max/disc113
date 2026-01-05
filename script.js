@@ -811,6 +811,16 @@ function isMobileLayout() {
     return window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
 }
 
+function openMobileChat() {
+  if (!isMobileLayout()) return;
+  document.body.classList.add('mobile-chat-open');
+}
+
+function closeMobileChat() {
+  if (!isMobileLayout()) return;
+  document.body.classList.remove('mobile-chat-open');
+}
+
 function openMobileDrawer(showOverlay = true) {
     if (!isMobileLayout()) return;
     const channelList = document.getElementById('channelList');
@@ -831,6 +841,17 @@ function initializeMobileUI() {
     const overlay = document.getElementById('mobileOverlay');
     const addFriendBtn = document.getElementById('mobileAddFriendBtn');
     const closeFriendsBtn = document.getElementById('mobileCloseFriendsBtn');
+    const backBtn = document.getElementById('mobileBackBtn');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            closeMobileChat();
+            if (currentView === 'dm' || currentView === 'dm_home' || currentDMUserId) {
+            showDMHomeView();
+    } else {
+      document.getElementById('chatView').style.display = 'none';
+    }
+  });
+}
 
     if (mobileMenuBtn) {
         mobileMenuBtn.addEventListener('click', () => {
@@ -1094,6 +1115,7 @@ function switchChannel(channelName) {
     closeMobileDrawer();
     
     loadChannelMessages(channelName);
+    openMobileChat();
 
     // Persist selection
     localStorage.setItem('lastView', 'server');
