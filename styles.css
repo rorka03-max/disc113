@@ -20,23 +20,19 @@ body {
 
 @media (max-width: 768px) {
     body {
-        flex-direction: column;
-        height: auto;
-        min-height: 100dvh;
-        overflow: auto;
+        flex-direction: row;
+        height: 100dvh;
+        overflow: hidden;
         background-attachment: scroll;
     }
 
     .server-list {
-        width: calc(100% - 16px);
-        height: 64px;
-        flex-direction: row;
-        padding: 8px;
-        gap: 8px;
-        overflow-x: auto;
-        overflow-y: hidden;
+        width: 72px;
+        height: calc(100dvh - 16px);
+        flex-direction: column;
+        overflow-x: hidden;
+        overflow-y: auto;
         margin: 8px;
-        border-radius: 16px;
     }
 
     .server-icon {
@@ -44,29 +40,75 @@ body {
     }
 
     .server-separator {
-        width: 2px;
-        height: 32px;
+        width: 32px;
+        height: 2px;
     }
 
     .channel-list {
-        width: calc(100% - 16px);
-        margin: 0 8px 8px 8px;
-        border-radius: 16px;
-        max-height: 38vh;
+        position: fixed;
+        top: 0;
+        left: 72px;
+        height: 100dvh;
+        width: min(340px, calc(100vw - 72px));
+        margin: 0;
+        border-radius: 0;
+        transform: translateX(-110%);
+        transition: transform 0.2s ease;
+        z-index: 1200;
+    }
+
+    .channel-list.mobile-open {
+        transform: translateX(0);
     }
 
     .main-content {
         width: 100%;
         min-height: 0;
+        height: 100dvh;
+        overflow: hidden;
     }
 
     .chat-header,
     .messages {
-        margin: 0 8px 8px 8px;
+        margin: 8px;
     }
 
     .message-input-container {
         padding: 10px 8px 14px 8px;
+    }
+
+    #mobileMenuBtn {
+        display: flex !important;
+    }
+
+    .mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.55);
+        z-index: 1100;
+    }
+
+    .mobile-add-friend-btn {
+        background: rgba(255, 255, 255, 0.10);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        color: #fff;
+        padding: 8px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        flex: 0 0 auto;
+    }
+
+    .dm-search-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dm-search-bar input {
+        flex: 1;
+        min-width: 0;
     }
 }
 
