@@ -727,7 +727,16 @@ window.startDM = async function(friendId, friendUsername) {
             <div class="chat-user-name">${friendUsername}</div>
             <div class="chat-user-status">В сети</div>
         </div>
+        <button class="chat-action-btn" id="dmHeaderCallBtn" title="Позвонить">📞</button>
     `;
+
+    const dmHeaderCallBtn = document.getElementById('dmHeaderCallBtn');
+    if (dmHeaderCallBtn) {
+        dmHeaderCallBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            initiateCall(friendId, 'audio');
+        });
+    }
 
     // Inject DM header actions
     const controls = document.querySelector('.chat-header .chat-controls');
@@ -874,6 +883,8 @@ function openFriendsOverlay() {
     if (friendsView) friendsView.style.display = 'flex';
     switchFriendsTab('add');
     closeMobileDrawer();
+
+    enterChatMode();
 }
 
 function closeFriendsOverlay() {
@@ -1051,6 +1062,7 @@ function initializeChannels() {
     
     channelElements.forEach(channel => {
         channel.addEventListener('click', () => {
+            if (channel.classList.contains('dm-item') || channel.hasAttribute('data-dm-id')) return;
             const channelName = channel.getAttribute('data-channel');
             const isVoiceChannel = channel.classList.contains('voice-channel');
             
@@ -1073,6 +1085,8 @@ function initializeChannels() {
 }
 
 function switchChannel(channelName) {
+    currentView = 'server';
+    currentDMUserId = null;
     currentChannel = channelName;
     const nextChannelId = getChannelIdByName(channelName);
     // Leave previous text room and join new one
@@ -1092,6 +1106,20 @@ function switchChannel(channelName) {
     const headerEl = document.getElementById('currentChannelName');
     if (headerEl) headerEl.textContent = channelName;
     document.getElementById('messageInput').placeholder = `Message #${channelName}`;
+
+    const chatHeaderInfo = document.getElementById('chatHeaderInfo');
+    if (chatHeaderInfo) {
+        chatHeaderInfo.innerHTML = `<div class="chat-channel-title"># ${channelName}</div>`;
+    }
+
+    const friendsView = document.getElementById('friendsView');
+    const chatView = document.getElementById('chatView');
+    const channelsView = document.getElementById('channelsView');
+    const dmListView = document.getElementById('dmListView');
+    if (friendsView) friendsView.style.display = 'none';
+    if (chatView) chatView.style.display = 'flex';
+    if (channelsView) channelsView.style.display = 'block';
+    if (dmListView) dmListView.style.display = 'none';
 
     closeMobileDrawer();
 
@@ -1958,7 +1986,7 @@ function populateDMList(friends) {
 
    friends.forEach(friend => {
        const dmItem = document.createElement('div');
-       dmItem.className = 'channel';
+       dmItem.className = 'channel dm-item';
        dmItem.setAttribute('data-dm-id', friend.id);
        dmItem.innerHTML = `
            <div class="friend-avatar">${friend.avatar || friend.username.charAt(0).toUpperCase()}</div>
