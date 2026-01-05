@@ -743,6 +743,8 @@ window.startDM = async function(friendId, friendUsername) {
     document.getElementById('messageInput').placeholder = `Message @${friendUsername}`;
 
     closeMobileDrawer();
+
+    enterChatMode();
     
     await loadDMHistory(friendId);
 };
@@ -811,16 +813,6 @@ function isMobileLayout() {
     return window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
 }
 
-function openMobileChat() {
-  if (!isMobileLayout()) return;
-  document.body.classList.add('mobile-chat-open');
-}
-
-function closeMobileChat() {
-  if (!isMobileLayout()) return;
-  document.body.classList.remove('mobile-chat-open');
-}
-
 function openMobileDrawer(showOverlay = true) {
     if (!isMobileLayout()) return;
     const channelList = document.getElementById('channelList');
@@ -841,17 +833,6 @@ function initializeMobileUI() {
     const overlay = document.getElementById('mobileOverlay');
     const addFriendBtn = document.getElementById('mobileAddFriendBtn');
     const closeFriendsBtn = document.getElementById('mobileCloseFriendsBtn');
-    const backBtn = document.getElementById('mobileBackBtn');
-    if (backBtn) {
-        backBtn.addEventListener('click', () => {
-            closeMobileChat();
-            if (currentView === 'dm' || currentView === 'dm_home' || currentDMUserId) {
-            showDMHomeView();
-    } else {
-      document.getElementById('chatView').style.display = 'none';
-    }
-  });
-}
 
     if (mobileMenuBtn) {
         mobileMenuBtn.addEventListener('click', () => {
@@ -1113,14 +1094,52 @@ function switchChannel(channelName) {
     document.getElementById('messageInput').placeholder = `Message #${channelName}`;
 
     closeMobileDrawer();
+
+    enterChatMode();
     
     loadChannelMessages(channelName);
-    openMobileChat();
 
     // Persist selection
     localStorage.setItem('lastView', 'server');
     if (currentServerId != null) localStorage.setItem('lastServerId', String(currentServerId));
     localStorage.setItem('lastChannelName', channelName);
+}
+
+// Функция для входа в режим чата (скрытие плашек)
+function enterChatMode() {
+    if (window.innerWidth <= 768) {
+        document.body.classList.add('mobile-chat-mode');
+    }
+}
+
+// Функция для выхода из режима чата (показ плашек)
+function exitChatMode() {
+    document.body.classList.remove('mobile-chat-mode');
+}
+
+// Слушатель для всех каналов
+document.addEventListener('click', (e) => {
+    // Если кликнули по каналу или другу (ЛС)
+    if (e.target.closest('.channel') || e.target.closest('.friend-item') || e.target.closest('.dm-item')) {
+        enterChatMode();
+    }
+});
+
+// Навешиваем событие на кнопки "Назад"
+document.getElementById('backBtn')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    exitChatMode();
+});
+
+document.getElementById('backBtnFriends')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    exitChatMode();
+});
+
+// Если при загрузке выбирается канал — проверяем ширину экрана
+if (currentChannel && window.innerWidth <= 768) {
+    // Если нужно чтобы сразу открывался чат, раскомментируй:
+    // enterChatMode();
 }
 
 function initializeMessageInput() {

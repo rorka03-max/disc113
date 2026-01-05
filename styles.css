@@ -5,11 +5,10 @@
 }
 
 :root {
-    --glass-bg: rgba(20, 22, 26, 0.45);
+    --glass-bg: rgba(20, 22, 26, 0.4);
     --glass-border: rgba(255, 255, 255, 0.15);
-    --glass-blur: 20px;
-    --radius: 24px;
-    --glass-hover: rgba(255, 255, 255, 0.10);
+    --radius-lg: 28px;
+    --radius-sm: 14px;
 }
 
 body {
@@ -25,88 +24,76 @@ body {
     height: 100vh;
     height: 100dvh;
     overflow: hidden;
-    padding: 8px;
-    gap: 8px;
+    padding: 10px;
+    gap: 10px;
 }
 
 .server-list,
 .channel-list,
 .main-content,
 .friends-main-view {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius);
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(20px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--radius-lg) !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     overflow: hidden;
 }
 
-.mobile-back-btn {
+/* Кнопка возврата (по умолчанию скрыта) */
+.back-to-menu-btn {
     display: none;
-    background: none;
-    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
     color: white;
+    align-items: center;
+    justify-content: center;
     margin-right: 12px;
     cursor: pointer;
+    transition: 0.3s;
+}
+
+.back-to-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 @media (max-width: 768px) {
-    body {
-        padding: 0;
-        gap: 0;
+    body { padding: 6px; gap: 0; }
+
+    body.mobile-chat-mode .server-list,
+    body.mobile-chat-mode .channel-list {
+        display: none !important;
     }
 
-    .server-list, .channel-list, .main-content {
-        border-radius: 0;
-        border: none;
-        height: 100%;
-        background: rgba(20, 22, 26, 0.65);
+    body.mobile-chat-mode .main-content,
+    body.mobile-chat-mode .friends-main-view {
+        display: flex !important;
+        width: 100% !important;
+        margin: 0 !important;
     }
 
-    .server-list {
-        display: flex;
-        width: 72px;
-    }
-
-    .channel-list {
-        display: flex;
-        width: calc(100% - 72px);
+    body.mobile-chat-mode .back-to-menu-btn {
+        display: flex !important;
     }
 
     .main-content, .friends-main-view {
         display: none !important;
     }
-
-    body.mobile-chat-open .server-list {
-        display: none !important;
-    }
-
-    body.mobile-chat-open .channel-list {
-        display: none !important;
-    }
-
-    body.mobile-chat-open .main-content,
-    body.mobile-chat-open .friends-main-view {
-        display: flex !important;
-        width: 100%;
-    }
-
-    .mobile-back-btn {
-        display: block;
-    }
-
-    .friends-tabs {
-        overflow-x: auto;
-        padding-bottom: 4px;
-    }
-
-    .friends-tab {
-        white-space: nowrap;
-        padding: 6px 10px;
-        font-size: 12px;
-    }
+    
+    .server-list { width: 70px; display: flex !important; }
+    .channel-list { flex: 1; display: flex !important; }
 }
+
+.message-input-wrapper {
+    border-radius: 22px !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+.server-icon { border-radius: 18px !important; }
 
 /* Server List Styles */
 .server-list {

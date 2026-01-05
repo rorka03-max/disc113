@@ -115,7 +115,11 @@
         <!-- Server/Channel Chat View -->
         <div id="chatView" class="chat-view" style="display: none;">
             <div class="chat-header">
-                <button class="mobile-back-btn" id="mobileBackBtn" type="button" aria-label="Back">←</button>
+                <button class="back-to-menu-btn" id="backBtn" type="button">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </button>
                 <div class="channel-info" id="chatHeaderInfo">
                     <!-- Header will be dynamically populated -->
                 </div>
@@ -139,6 +143,11 @@
         <!-- Friends View (Main Content) -->
         <div id="friendsView" class="friends-main-view" style="display: none;">
             <div class="friends-header">
+                <button class="back-to-menu-btn" id="backBtnFriends" type="button">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </button>
                 <div class="friends-tabs">
                     <button class="friends-tab active" data-tab="online">Online</button>
                     <button class="friends-tab" data-tab="all">All</button>
