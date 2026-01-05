@@ -74,6 +74,22 @@ body {
         margin-left: 72px;
     }
 
+    .friends-main-view {
+        position: fixed;
+        top: 0;
+        left: 72px;
+        width: calc(100vw - 72px);
+        height: 100dvh;
+        margin: 0;
+        border-radius: 0;
+        z-index: 1400;
+        display: none;
+    }
+
+    #mobileCloseFriendsBtn {
+        display: flex !important;
+    }
+
     .chat-header,
     .messages {
         margin: 8px;

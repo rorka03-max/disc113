@@ -59,6 +59,10 @@ function initializeApp() {
     const lastView = localStorage.getItem('lastView');
     const lastServerId = localStorage.getItem('lastServerId');
     const lastChannelName = localStorage.getItem('lastChannelName') || 'general';
+    if (isMobileLayout()) {
+        showDMHomeView();
+        return;
+    }
     if (lastView === 'server' && lastServerId) {
         // Show server UI immediately; server icon highlight will sync when user clicks
         currentView = 'server';
@@ -766,6 +770,25 @@ function showFriendsView() {
     closeMobileDrawer();
 }
 
+function showDMHomeView() {
+    currentView = 'dm_home';
+    currentDMUserId = null;
+    currentServerId = null;
+
+    document.getElementById('friendsView').style.display = 'none';
+    document.getElementById('chatView').style.display = 'none';
+    document.getElementById('channelsView').style.display = 'none';
+    document.getElementById('dmListView').style.display = 'block';
+
+    document.getElementById('serverName').textContent = 'Friends';
+    document.querySelectorAll('.server-icon').forEach(icon => icon.classList.remove('active'));
+    const friendsBtn = document.getElementById('friendsBtn');
+    if (friendsBtn) friendsBtn.classList.add('active');
+
+    openMobileDrawer(false);
+    closeFriendsOverlay();
+}
+
 // Show server view
 function showServerView(server) {
     currentView = 'server';
@@ -781,18 +804,19 @@ function showServerView(server) {
     switchChannel('general');
 
     closeMobileDrawer();
+    closeFriendsOverlay();
 }
 
 function isMobileLayout() {
     return window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
 }
 
-function openMobileDrawer() {
+function openMobileDrawer(showOverlay = true) {
     if (!isMobileLayout()) return;
     const channelList = document.getElementById('channelList');
     const overlay = document.getElementById('mobileOverlay');
     if (channelList) channelList.classList.add('mobile-open');
-    if (overlay) overlay.style.display = 'block';
+    if (overlay) overlay.style.display = showOverlay ? 'block' : 'none';
 }
 
 function closeMobileDrawer() {
@@ -806,6 +830,7 @@ function initializeMobileUI() {
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
     const overlay = document.getElementById('mobileOverlay');
     const addFriendBtn = document.getElementById('mobileAddFriendBtn');
+    const closeFriendsBtn = document.getElementById('mobileCloseFriendsBtn');
 
     if (mobileMenuBtn) {
         mobileMenuBtn.addEventListener('click', () => {
@@ -825,11 +850,34 @@ function initializeMobileUI() {
 
     if (addFriendBtn) {
         addFriendBtn.addEventListener('click', () => {
-            showFriendsView();
-            switchFriendsTab('add');
-            closeMobileDrawer();
+            openFriendsOverlay();
         });
     }
+
+    if (closeFriendsBtn) {
+        closeFriendsBtn.addEventListener('click', () => {
+            closeFriendsOverlay();
+        });
+    }
+}
+
+function openFriendsOverlay() {
+    if (!isMobileLayout()) {
+        showFriendsView();
+        switchFriendsTab('add');
+        return;
+    }
+
+    const friendsView = document.getElementById('friendsView');
+    if (friendsView) friendsView.style.display = 'flex';
+    switchFriendsTab('add');
+    closeMobileDrawer();
+}
+
+function closeFriendsOverlay() {
+    if (!isMobileLayout()) return;
+    const friendsView = document.getElementById('friendsView');
+    if (friendsView) friendsView.style.display = 'none';
 }
 
 async function loadUserServers() {
@@ -849,7 +897,11 @@ function initializeServerManagement() {
     const addServerBtn = document.getElementById('addServerBtn');
     
     friendsBtn.addEventListener('click', () => {
-        showFriendsView();
+        if (isMobileLayout()) {
+            showDMHomeView();
+        } else {
+            showFriendsView();
+        }
     });
     
     addServerBtn.addEventListener('click', () => {
