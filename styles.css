@@ -18,30 +18,27 @@ body {
     overflow: hidden;
 }
 
+/* --- МОБИЛЬНАЯ ВЕРСИЯ (ИСПРАВЛЕННАЯ) --- */
 @media (max-width: 768px) {
+    /* 1. Главный контейнер в ряд */
     body {
-        flex-direction: row;
+        flex-direction: row !important; /* Строго в ряд */
         height: 100dvh;
         overflow: hidden;
         background-attachment: scroll;
     }
 
+    /* 2. Колонка серверов (Слева, узкая) */
     .server-list {
-        width: 72px;
-        height: 100dvh;
-        flex-direction: column;
-        overflow-x: hidden;
+        position: relative !important; /* Убрали fixed */
+        flex: 0 0 72px !important;    /* Жесткая ширина */
+        height: 100vh !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        z-index: 10;
         overflow-y: auto;
-        margin: 0;
-        border-radius: 0;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 1300;
-    }
-
-    .server-icon {
-        flex: 0 0 auto;
+        top: auto !important;
+        left: auto !important;
     }
 
     .server-separator {
@@ -49,130 +46,90 @@ body {
         height: 2px;
     }
 
+    /* 3. Колонка каналов / Меню (Посередине) */
     .channel-list {
-        position: fixed;
-        top: 0;
-        left: 72px;
-        height: 100dvh;
-        width: calc(100vw - 72px);
-        margin: 0;
-        border-radius: 0;
-        transform: translateX(-110%);
-        transition: transform 0.2s ease;
-        z-index: 1200;
-    }
-
-    .channel-list.mobile-open {
-        transform: translateX(0);
-    }
-
-    .main-content {
-        width: 100%;
-        min-height: 0;
-        height: 100dvh;
-        overflow: hidden;
-        margin-left: 72px;
-    }
-
-    .friends-main-view {
-        position: fixed;
-        top: 0;
-        left: 72px;
-        width: calc(100vw - 72px);
-        height: 100dvh;
-        margin: 0;
-        border-radius: 0;
-        z-index: 1400;
-        display: none;
-    }
-
-    #mobileCloseFriendsBtn {
+        position: relative !important; /* Убрали fixed */
+        flex: 0 0 170px !important;    /* Ширина списка каналов (можно менять) */
+        width: 170px !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        transform: none !important;    /* Всегда показывать */
+        transition: none !important;
+        z-index: 5;
+        top: auto !important;
+        left: auto !important;
         display: flex !important;
+        flex-direction: column;
     }
 
-    .channel-list {
+    /* Убираем классы скрытия/анимации мобильного меню, так как оно теперь статично */
+    .channel-list.mobile-open {
+        transform: none;
+    }
+
+    /* 4. Основной контент (Чат / Друзья - Справа до стены) */
+    .main-content {
+        position: relative !important;
+        flex: 1 !important;            /* Занимает ВСЁ оставшееся место */
+        width: auto !important;
+        min-width: 0;                  /* Чтобы чат не распирал экран */
+        height: 100vh !important;
+        margin-left: 0 !important;     /* Убираем отступ, flex сам подвинет */
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        z-index: 1;
     }
 
-    .server-header {
-        position: sticky;
-        top: 0;
-        z-index: 3;
+    /* Если открыта вкладка "Друзья" */
+    .friends-main-view {
+        position: relative !important;
+        flex: 1 !important;
+        width: auto !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        border-radius: 0;
+        z-index: 1;
+        top: auto !important;
+        left: auto !important;
     }
 
-    .dm-list-view {
-        padding: 0;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
+    /* Скрываем кнопки открытия меню, так как меню теперь всегда видно */
+    #mobileMenuBtn {
+        display: none !important;
+    }
+    #mobileCloseFriendsBtn {
+        display: none !important;
+    }
+    .mobile-overlay {
+        display: none !important;
     }
 
-    .dm-search-bar {
-        position: sticky;
-        top: 48px;
-        z-index: 2;
-        padding: 10px 12px;
-        background: rgba(20, 22, 26, 0.55);
-        backdrop-filter: blur(18px) saturate(120%);
-        -webkit-backdrop-filter: blur(18px) saturate(120%);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: nowrap;
-    }
-
-    .channel-category {
-        padding: 8px 12px;
-    }
-
+    /* Адаптация внутренностей чата под сжатый размер */
     .chat-header,
     .messages {
-        margin: 8px;
+        margin: 0 !important; /* Убираем отступы для экономии места */
+        border-radius: 0 !important;
+        border: none !important;
+        border-bottom: 1px solid rgba(255,255,255,0.1) !important;
     }
 
     .message-input-container {
-        padding: 10px 8px 14px 8px;
+        padding: 8px !important;
     }
 
-    #mobileMenuBtn {
-        display: flex !important;
+    .message-input-wrapper {
+        border-radius: 20px;
     }
 
-    .mobile-overlay {
-        position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 72px;
-        background: rgba(0,0,0,0.55);
-        z-index: 1100;
-    }
-
+    /* Кнопка "Добавить друга" компактнее */
     .mobile-add-friend-btn {
-        background: rgba(255, 255, 255, 0.10);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        color: #fff;
-        padding: 8px 10px;
-        border-radius: 999px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        flex: 0 0 auto;
-    }
-
-    .dm-search-bar {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .dm-search-bar input {
-        flex: 1;
-        min-width: 0;
+        padding: 6px 8px;
+        font-size: 11px;
     }
 }
+/* --- КОНЕЦ МОБИЛЬНОЙ ВЕРСИИ --- */
+
 
 :root {
     --glass-bg: rgba(255, 255, 255, 0.16);
