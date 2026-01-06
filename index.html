@@ -132,6 +132,16 @@
             </div>
             <div class="messages" id="messagesContainer"></div>
             <div class="message-input-container">
+                <div class="tg-channel-footer" id="tgChannelFooter" style="display: none;">
+                    <div class="tg-footer-left">
+                        <div class="tg-footer-title">Уведомления</div>
+                        <div class="tg-footer-subtitle" id="tgMuteSubtitle">Включены</div>
+                    </div>
+                    <label class="tg-switch" title="Отключить уведомления">
+                        <input type="checkbox" id="tgMuteToggle" />
+                        <span class="tg-slider"></span>
+                    </label>
+                </div>
                 <div class="message-input-wrapper">
                     <button class="attach-btn"><svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C11.5 2 11 2.19 10.59 2.59L2.59 10.59C1.8 11.37 1.8 12.63 2.59 13.41C3.37 14.2 4.63 14.2 5.41 13.41L11 7.83V16C11 16.55 11.45 17 12 17C12.55 17 13 16.55 13 16V7.83L18.59 13.41C19.37 14.2 20.63 14.2 21.41 13.41C22.2 12.63 22.2 11.37 21.41 10.59L13.41 2.59C13 2.19 12.5 2 12 2Z"/></svg></button>
                     <input type="text" id="messageInput" placeholder="Message..." />
@@ -212,6 +222,36 @@
             <div class="incoming-call-actions">
                 <button id="acceptCallBtn" class="call-action-btn accept">Accept</button>
                 <button id="rejectCallBtn" class="call-action-btn reject">Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tgAddOverlay" class="tg-overlay" style="display: none;">
+        <div class="tg-modal" role="dialog" aria-modal="true">
+            <div class="tg-modal-header">
+                <div class="tg-modal-title">Добавить Telegram-канал</div>
+                <button class="tg-modal-close" id="tgAddCloseBtn" type="button">✕</button>
+            </div>
+
+            <div class="tg-modal-tabs">
+                <button class="tg-modal-tab active" id="tgTabFindBtn" type="button">Найти</button>
+                <button class="tg-modal-tab" id="tgTabCreateBtn" type="button">Создать</button>
+            </div>
+
+            <div class="tg-modal-body">
+                <div id="tgFindPane">
+                    <div class="tg-modal-input">
+                        <input id="tgFindInput" type="text" placeholder="Например: bet" autocomplete="off" />
+                    </div>
+                    <div id="tgFindResults" class="tg-find-results"></div>
+                </div>
+
+                <div id="tgCreatePane" style="display: none;">
+                    <div class="tg-modal-input">
+                        <input id="tgCreateInput" type="text" placeholder="Название твоего канала" autocomplete="off" />
+                    </div>
+                    <button id="tgCreateSubmit" class="tg-primary-btn" type="button">Создать</button>
+                </div>
             </div>
         </div>
     </div>
