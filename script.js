@@ -734,14 +734,18 @@ window.removeFriend = async function(friendId) {
 // Initiate call function
 async function initiateCall(friendId, type) {
     try {
-        // Start with AUDIO ONLY to avoid auto camera enable
-        const constraints = { video: false, audio: true };
+        // On mobile, start with camera on by default.
+        // On desktop, start audio-only to avoid auto camera enable.
+        const constraints = isMobileLayout()
+            ? { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: true }
+            : { video: false, audio: true };
         
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
         
         // Show call interface
         const callInterface = document.getElementById('callInterface');
         callInterface.classList.remove('hidden');
+        callInterface.classList.toggle('fullscreen', isMobileLayout());
         
         // Update call header
         document.querySelector('.call-channel-name').textContent = `Calling...`;
@@ -749,7 +753,7 @@ async function initiateCall(friendId, type) {
         // Set local video
         const localVideo = document.getElementById('localVideo');
         localVideo.srcObject = localStream;
-        setLocalPlaceholderVisible(true);
+        setLocalPlaceholderVisible(localStream.getVideoTracks().length === 0);
         // Monitor local speaking (green outline when you speak)
         const callRoot = document.getElementById('callInterface');
         if (callRoot) monitorSpeaking(localStream, callRoot, { threshold: 0.015 });
@@ -776,7 +780,7 @@ async function initiateCall(friendId, type) {
         }
         
         inCall = true;
-        isVideoEnabled = false; // camera off by default
+        isVideoEnabled = isMobileLayout(); // camera on by default on mobile
         isAudioEnabled = true;
         updateCallButtons();
         
@@ -830,20 +834,24 @@ function showIncomingCall(caller, type) {
 // Accept incoming call
 async function acceptCall(caller, type) {
     try {
-        // Start with AUDIO ONLY; user can enable camera later
-        const constraints = { video: false, audio: true };
+        // On mobile, start with camera on by default.
+        // On desktop, start audio-only; user can enable camera later.
+        const constraints = isMobileLayout()
+            ? { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: true }
+            : { video: false, audio: true };
         
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
         
         // Show call interface
         const callInterface = document.getElementById('callInterface');
         callInterface.classList.remove('hidden');
+        callInterface.classList.toggle('fullscreen', isMobileLayout());
         
         document.querySelector('.call-channel-name').textContent = `Call with ${caller.username}`;
         
         const localVideo = document.getElementById('localVideo');
         localVideo.srcObject = localStream;
-        setLocalPlaceholderVisible(true);
+        setLocalPlaceholderVisible(localStream.getVideoTracks().length === 0);
         // Monitor local speaking (green outline when you speak)
         const callRoot = document.getElementById('callInterface');
         if (callRoot) monitorSpeaking(localStream, callRoot, { threshold: 0.015 });
@@ -868,7 +876,7 @@ async function acceptCall(caller, type) {
         }
         
         inCall = true;
-        isVideoEnabled = false; // camera off by default
+        isVideoEnabled = isMobileLayout();
         isAudioEnabled = true;
         updateCallButtons();
         
@@ -1860,7 +1868,7 @@ function leaveVoiceChannel(force = false) {
     if (force) {
         const localVideo = document.getElementById('localVideo');
         localVideo.srcObject = null;
-        isVideoEnabled = true;
+        isVideoEnabled = isMobileLayout();
         isAudioEnabled = true;
         updateCallButtons();
         setLocalPlaceholderVisible(false);
@@ -1930,7 +1938,26 @@ function toggleVideo() {
     };
     
     const disableVideo = () => {
-        localStream.getVideoTracks().forEach(track => track.enabled = false);
+        // Do not just disable the track (it freezes the last frame on remote).
+        // Stop & remove the track and detach from peer connections.
+        const tracks = localStream.getVideoTracks();
+        tracks.forEach(track => {
+            try { track.stop(); } catch (e) {}
+            try { localStream.removeTrack(track); } catch (e) {}
+        });
+
+        Object.values(peerConnections).forEach(pc => {
+            const sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
+            if (sender) {
+                sender.replaceTrack(null);
+            }
+        });
+
+        const localVideo = document.getElementById('localVideo');
+        if (localVideo) {
+            // Keep audio-only stream; video element will go black and placeholder will show.
+            localVideo.srcObject = localStream;
+        }
         setLocalPlaceholderVisible(true);
     };
     
@@ -1972,12 +1999,18 @@ function toggleAudio() {
 }
 
 async function toggleScreenShare() {
+    // Most mobile browsers do not support getDisplayMedia.
+    if (isMobileLayout() || !navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        alert('Демонстрация экрана недоступна на телефоне. Используй камеру вместо этого.');
+        return;
+    }
+
     if (screenStream) {
         // Stop screen sharing
         screenStream.getTracks().forEach(track => track.stop());
         
         // Replace screen track with camera track in all peer connections
-        const videoTrack = localStream.getVideoTracks()[0];
+        const videoTrack = (isVideoEnabled ? localStream.getVideoTracks()[0] : null);
         Object.values(peerConnections).forEach(pc => {
             const sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
             if (sender) {
