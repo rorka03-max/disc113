@@ -29,32 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.replace('login.html');
         return;
     }
-
-async function renegotiateAllPeers(reason) {
-    if (!socket || !socket.connected) return;
-
-    const entries = Object.entries(peerConnections);
-    for (const [remoteSocketId, pc] of entries) {
-        if (!pc) continue;
-
-        // Only negotiate when stable; avoids some glare issues.
-        if (pc.signalingState !== 'stable') {
-            continue;
-        }
-
-        try {
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            socket.emit('offer', {
-                to: remoteSocketId,
-                offer: pc.localDescription,
-                reason
-            });
-        } catch (e) {
-            console.error('Renegotiation failed:', e);
-        }
-    }
-}
     
     try {
         currentUser = JSON.parse(userStr);
@@ -2073,11 +2047,6 @@ async function toggleScreenShare() {
             localVideo.srcObject = mixedStream;
             setLocalPlaceholderVisible(false);
             
-            // Handle screen share ending
-            screenTrack.addEventListener('ended', () => {
-                toggleScreenShare(); // This will stop screen sharing
-            });
-            
             updateCallButtons();
         } catch (error) {
             console.error('Error sharing screen:', error);
@@ -2086,6 +2055,32 @@ async function toggleScreenShare() {
             } else {
                 alert('Error sharing screen. Please try again.');
             }
+        }
+    }
+}
+
+async function renegotiateAllPeers(reason) {
+    if (!socket || !socket.connected) return;
+
+    const entries = Object.entries(peerConnections);
+    for (const [remoteSocketId, pc] of entries) {
+        if (!pc) continue;
+
+        // Only negotiate when stable; avoids some glare issues.
+        if (pc.signalingState !== 'stable') {
+            continue;
+        }
+
+        try {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            socket.emit('offer', {
+                to: remoteSocketId,
+                offer: pc.localDescription,
+                reason
+            });
+        } catch (e) {
+            console.error('Renegotiation failed:', e);
         }
     }
 }
