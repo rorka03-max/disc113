@@ -18,8 +18,99 @@ let socket = null;
 let token = null;
 let currentView = 'friends';
 let currentServerId = null;
-let currentServer = null;
 let currentDMUserId = null;
+
+const availableChannels = [
+    { id: 101, name: 'beta' },
+    { id: 102, name: 'betas' },
+    { id: 103, name: 'better_world' },
+    { id: 104, name: 'news_today' }
+];
+
+function setChannelMode(isPublicChannel) {
+    const inputArea = document.getElementById('chatInputArea');
+    const tgFooter = document.getElementById('tgChannelFooter');
+
+    if (!inputArea || !tgFooter) return;
+    if (isPublicChannel) {
+        inputArea.style.display = 'none';
+        tgFooter.style.display = 'flex';
+    } else {
+        inputArea.style.display = 'block';
+        tgFooter.style.display = 'none';
+    }
+}
+
+function initializeTgMenu() {
+    const openBtn = document.getElementById('openTgMenuBtn');
+    const modal = document.getElementById('tgMenuModal');
+    const input = document.getElementById('tgSearchInput');
+    const resultsDiv = document.getElementById('tgSearchResults');
+
+    if (openBtn && modal) {
+        openBtn.onclick = () => {
+            modal.classList.remove('hidden');
+            if (input) input.focus();
+        };
+    }
+
+    if (input && resultsDiv) {
+        input.addEventListener('input', (e) => {
+            const query = String(e.target.value || '').toLowerCase();
+            resultsDiv.innerHTML = '';
+
+            if (query.length < 1) return;
+
+            const filtered = availableChannels.filter(c => c.name.includes(query));
+            filtered.forEach(channel => {
+                const item = document.createElement('div');
+                item.className = 'tg-result-item';
+                item.innerText = `@${channel.name}`;
+                item.onclick = () => {
+                    joinTgChannel(channel.name);
+                    closeTgMenu();
+                };
+                resultsDiv.appendChild(item);
+            });
+        });
+    }
+
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeTgMenu();
+        });
+    }
+}
+
+function joinTgChannel(name) {
+    const channelNameDisplay = document.getElementById('channelNameDisplay');
+    if (channelNameDisplay) {
+        channelNameDisplay.innerText = name;
+    }
+
+    const chatHeaderInfo = document.getElementById('chatHeaderInfo');
+    if (chatHeaderInfo) {
+        chatHeaderInfo.innerHTML = `<div class="chat-channel-title">@ ${name}</div>`;
+    }
+
+    setChannelMode(true);
+    enterChatMode();
+}
+
+function closeTgMenu() {
+    const modal = document.getElementById('tgMenuModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+window.closeTgMenu = closeTgMenu;
+
+function onServerChannelClick(name) {
+    const channelNameDisplay = document.getElementById('channelNameDisplay');
+    if (channelNameDisplay) channelNameDisplay.innerText = name;
+    setChannelMode(true);
+    enterChatMode();
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     token = localStorage.getItem('token');
@@ -29,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.replace('login.html');
         return;
     }
-    
+
     try {
         currentUser = JSON.parse(userStr);
         initializeApp();
@@ -46,10 +137,10 @@ function initializeApp() {
     initializeFriendsTabs();
     initializeChannels();
     initializeMessageInput();
+    initializeTgMenu();
     initializeUserControls();
     initializeCallControls();
     initializeServerManagement();
-    initializeTelegramChannelUI();
     initializeMobileUI();
     initializeFileUpload();
     initializeEmojiPicker();
@@ -78,189 +169,6 @@ function initializeApp() {
     } else {
         showFriendsView();
     }
-}
-
-function getServerOwnerId(server) {
-    if (!server) return null;
-    return server.ownerId ?? server.owner ?? server.creatorId ?? server.userId ?? null;
-}
-
-function isCurrentServerOwnedByUser() {
-    const ownerId = getServerOwnerId(currentServer);
-    if (!ownerId || !currentUser) return false;
-    return String(ownerId) === String(currentUser.id);
-}
-
-function getMuteStorageKey(channelName) {
-    const sid = currentServerId != null ? String(currentServerId) : 'none';
-    return `tgMute:${sid}:${String(channelName)}`;
-}
-
-function isChannelMuted(channelName) {
-    try {
-        return localStorage.getItem(getMuteStorageKey(channelName)) === '1';
-    } catch (_) {
-        return false;
-    }
-}
-
-function setChannelMuted(channelName, muted) {
-    try {
-        localStorage.setItem(getMuteStorageKey(channelName), muted ? '1' : '0');
-    } catch (_) {}
-}
-
-function updateMuteSubtitle(muted) {
-    const subtitle = document.getElementById('tgMuteSubtitle');
-    if (!subtitle) return;
-    subtitle.textContent = muted ? 'Отключены' : 'Включены';
-}
-
-function applyTelegramChannelState(channelName) {
-    const footer = document.getElementById('tgChannelFooter');
-    const muteToggle = document.getElementById('tgMuteToggle');
-
-    if (footer) {
-        footer.style.display = currentView === 'server' ? 'flex' : 'none';
-    }
-
-    if (muteToggle) {
-        const muted = isChannelMuted(channelName);
-        muteToggle.checked = muted;
-        updateMuteSubtitle(muted);
-    }
-
-    const messageInput = document.getElementById('messageInput');
-    const wrapper = document.querySelector('.message-input-wrapper');
-    const readOnly = currentView === 'server' && !isCurrentServerOwnedByUser();
-
-    if (messageInput) {
-        messageInput.disabled = readOnly;
-        messageInput.placeholder = readOnly ? 'Только чтение' : `Message #${channelName}`;
-    }
-
-    if (wrapper) {
-        wrapper.classList.toggle('tg-read-only', readOnly);
-    }
-}
-
-function setTelegramAddTab(tab) {
-    const tabFind = document.getElementById('tgTabFindBtn');
-    const tabCreate = document.getElementById('tgTabCreateBtn');
-    const findPane = document.getElementById('tgFindPane');
-    const createPane = document.getElementById('tgCreatePane');
-
-    const isFind = tab === 'find';
-    tabFind?.classList.toggle('active', isFind);
-    tabCreate?.classList.toggle('active', !isFind);
-    if (findPane) findPane.style.display = isFind ? 'block' : 'none';
-    if (createPane) createPane.style.display = isFind ? 'none' : 'block';
-
-    if (isFind) {
-        document.getElementById('tgFindInput')?.focus();
-    } else {
-        document.getElementById('tgCreateInput')?.focus();
-    }
-}
-
-function renderTelegramFindResults(query) {
-    const resultsEl = document.getElementById('tgFindResults');
-    if (!resultsEl) return;
-
-    const q = String(query || '').trim().toLowerCase();
-    const list = (servers || [])
-        .filter(s => {
-            const name = String(s?.name || '').toLowerCase();
-            return q === '' || name.includes(q);
-        })
-        .slice(0, 12);
-
-    resultsEl.innerHTML = '';
-    list.forEach(server => {
-        const item = document.createElement('div');
-        item.className = 'tg-find-item';
-
-        const left = document.createElement('div');
-        const name = document.createElement('div');
-        name.className = 'tg-find-name';
-        name.textContent = server.name;
-        const hint = document.createElement('div');
-        hint.className = 'tg-find-hint';
-        hint.textContent = 'Открыть канал';
-        left.appendChild(name);
-        left.appendChild(hint);
-
-        const right = document.createElement('div');
-        right.className = 'tg-find-hint';
-        right.textContent = '→';
-
-        item.appendChild(left);
-        item.appendChild(right);
-        item.addEventListener('click', () => {
-            const icon = document.querySelector(`.server-icon[data-server-id="${server.id}"]`);
-            if (icon) icon.click();
-            else showServerView(server);
-            closeTelegramAddMenu();
-        });
-
-        resultsEl.appendChild(item);
-    });
-}
-
-function openTelegramAddMenu() {
-    const overlay = document.getElementById('tgAddOverlay');
-    if (!overlay) return;
-    overlay.style.display = 'flex';
-    setTelegramAddTab('find');
-
-    const findInput = document.getElementById('tgFindInput');
-    if (findInput) {
-        findInput.value = '';
-        findInput.focus();
-        renderTelegramFindResults('');
-    }
-}
-
-function closeTelegramAddMenu() {
-    const overlay = document.getElementById('tgAddOverlay');
-    if (!overlay) return;
-    overlay.style.display = 'none';
-}
-
-function initializeTelegramChannelUI() {
-    const muteToggle = document.getElementById('tgMuteToggle');
-    if (muteToggle) {
-        muteToggle.addEventListener('change', () => {
-            setChannelMuted(currentChannel, Boolean(muteToggle.checked));
-            updateMuteSubtitle(Boolean(muteToggle.checked));
-        });
-    }
-
-    const overlay = document.getElementById('tgAddOverlay');
-    const closeBtn = document.getElementById('tgAddCloseBtn');
-    if (closeBtn) closeBtn.addEventListener('click', closeTelegramAddMenu);
-    if (overlay) {
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) closeTelegramAddMenu();
-        });
-    }
-
-    const tabFind = document.getElementById('tgTabFindBtn');
-    const tabCreate = document.getElementById('tgTabCreateBtn');
-    tabFind?.addEventListener('click', () => setTelegramAddTab('find'));
-    tabCreate?.addEventListener('click', () => setTelegramAddTab('create'));
-
-    const findInput = document.getElementById('tgFindInput');
-    findInput?.addEventListener('input', () => renderTelegramFindResults(findInput.value));
-
-    const createBtn = document.getElementById('tgCreateSubmit');
-    createBtn?.addEventListener('click', async () => {
-        const nameInput = document.getElementById('tgCreateInput');
-        const name = nameInput?.value || '';
-        await createNewServer(name);
-        if (nameInput) nameInput.value = '';
-        closeTelegramAddMenu();
-    });
 }
 
 function requestNotificationPermission() {
@@ -318,9 +226,7 @@ function connectToSocketIO() {
             }
             
             if (document.hidden) {
-                if (!isChannelMuted(channelName)) {
-                    showNotification('New Message', `${data.message.author}: ${data.message.text}`);
-                }
+                showNotification('New Message', `${data.message.author}: ${data.message.text}`);
             }
         });
         
@@ -901,7 +807,6 @@ window.startDM = async function(friendId, friendUsername) {
     currentView = 'dm';
     currentDMUserId = friendId;
     currentServerId = null;
-    currentServer = null;
 
     document.getElementById('friendsView').style.display = 'none';
     document.getElementById('chatView').style.display = 'flex';
@@ -942,6 +847,8 @@ window.startDM = async function(friendId, friendUsername) {
     closeMobileDrawer();
 
     enterChatMode();
+
+    setChannelMode(false);
     
     await loadDMHistory(friendId);
 };
@@ -951,7 +858,6 @@ function showFriendsView() {
     currentView = 'friends';
     currentDMUserId = null;
     currentServerId = null;
-    currentServer = null;
 
     document.getElementById('friendsView').style.display = 'flex';
     document.getElementById('chatView').style.display = 'none';
@@ -974,7 +880,6 @@ function showDMHomeView() {
     currentView = 'dm_home';
     currentDMUserId = null;
     currentServerId = null;
-    currentServer = null;
 
     document.getElementById('friendsView').style.display = 'none';
     document.getElementById('chatView').style.display = 'none';
@@ -994,7 +899,6 @@ function showDMHomeView() {
 function showServerView(server) {
     currentView = 'server';
     currentServerId = server.id;
-    currentServer = server;
     currentDMUserId = null;
 
     document.getElementById('friendsView').style.display = 'none';
@@ -1109,7 +1013,7 @@ function initializeServerManagement() {
     });
     
     addServerBtn.addEventListener('click', () => {
-        openTelegramAddMenu();
+        createNewServer();
     });
 
     // Global handler to close context menu
@@ -1122,7 +1026,9 @@ function initializeServerManagement() {
     });
 }
 
-async function createNewServer(serverName) {
+async function createNewServer() {
+    const serverName = prompt('Enter server name:');
+    
     if (!serverName || serverName.trim() === '') return;
     
     try {
@@ -1301,8 +1207,6 @@ function switchChannel(channelName) {
         chatHeaderInfo.innerHTML = `<div class="chat-channel-title"># ${channelName}</div>`;
     }
 
-    applyTelegramChannelState(channelName);
-
     const friendsView = document.getElementById('friendsView');
     const chatView = document.getElementById('chatView');
     const channelsView = document.getElementById('channelsView');
@@ -1315,6 +1219,8 @@ function switchChannel(channelName) {
     closeMobileDrawer();
 
     enterChatMode();
+
+    setChannelMode(true);
     
     loadChannelMessages(channelName);
 
@@ -1377,10 +1283,6 @@ function sendMessage() {
     const text = messageInput.value.trim();
     
     if (text === '') return;
-
-    if (currentView === 'server' && !isCurrentServerOwnedByUser()) {
-        return;
-    }
 
     const message = {
         text: text,

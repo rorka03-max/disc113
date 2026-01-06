@@ -125,28 +125,24 @@
                 </div>
                 <div class="chat-controls">
                     <button class="icon-btn" id="mobileMenuBtn" title="Menu" style="display: none;">☰</button>
+                    <button class="chat-action-btn" id="openTgMenuBtn" title="Каналы">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    </button>
                     <button class="icon-btn" id="membersBtn" title="Members" style="display: none;">
                         <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M14 8.00598C14 10.211 12.206 12.006 10 12.006C7.795 12.006 6 10.211 6 8.00598C6 5.80098 7.795 4.00598 10 4.00598C12.206 4.00598 14 5.80098 14 8.00598ZM2 19.006C2 15.473 5.29 13.006 10 13.006C14.711 13.006 18 15.473 18 19.006V20.006H2V19.006Z"/></svg>
                     </button>
                 </div>
             </div>
             <div class="messages" id="messagesContainer"></div>
-            <div class="message-input-container">
-                <div class="tg-channel-footer" id="tgChannelFooter" style="display: none;">
-                    <div class="tg-footer-left">
-                        <div class="tg-footer-title">Уведомления</div>
-                        <div class="tg-footer-subtitle" id="tgMuteSubtitle">Включены</div>
-                    </div>
-                    <label class="tg-switch" title="Отключить уведомления">
-                        <input type="checkbox" id="tgMuteToggle" />
-                        <span class="tg-slider"></span>
-                    </label>
-                </div>
+            <div class="message-input-container" id="chatInputArea">
                 <div class="message-input-wrapper">
                     <button class="attach-btn"><svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C11.5 2 11 2.19 10.59 2.59L2.59 10.59C1.8 11.37 1.8 12.63 2.59 13.41C3.37 14.2 4.63 14.2 5.41 13.41L11 7.83V16C11 16.55 11.45 17 12 17C12.55 17 13 16.55 13 16V7.83L18.59 13.41C19.37 14.2 20.63 14.2 21.41 13.41C22.2 12.63 22.2 11.37 21.41 10.59L13.41 2.59C13 2.19 12.5 2 12 2Z"/></svg></button>
                     <input type="text" id="messageInput" placeholder="Message..." />
                     <div class="emoji-btn"><svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.486 2 2 6.486 2 12C2 17.514 6.486 22 12 22C17.514 22 22 17.514 22 12C22 6.486 17.514 2 12 2ZM15.5 8C16.328 8 17 8.672 17 9.5C17 10.328 16.328 11 15.5 11C14.672 11 14 10.328 14 9.5C14 8.672 14.672 8 15.5 8ZM8.5 8C9.328 8 10 8.672 10 9.5C10 10.328 9.328 11 8.5 11C7.672 11 7 10.328 7 9.5C7 8.672 7.672 8 8.5 8ZM12 17.5C9.656 17.5 7.586 16.019 6.673 13.852C6.594 13.643 6.673 13.407 6.852 13.266C7.031 13.125 7.281 13.117 7.469 13.242C8.766 14.109 10.352 14.5 12 14.5C13.648 14.5 15.234 14.109 16.531 13.242C16.719 13.117 16.969 13.125 17.148 13.266C17.327 13.407 17.406 13.643 17.327 13.852C16.414 16.019 14.344 17.5 12 17.5Z"/></svg></div>
                 </div>
+            </div>
+            <div class="tg-channel-footer" id="tgChannelFooter" style="display: none;">
+                <button class="tg-mute-btn">Отключить уведомления</button>
             </div>
         </div>
 
@@ -181,6 +177,19 @@
                         <div id="searchResults"></div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tgMenuModal" class="tg-modal hidden">
+        <div class="tg-modal-content">
+            <div class="tg-search-box">
+                <input type="text" id="tgSearchInput" placeholder="Поиск каналов...">
+                <div id="tgSearchResults" class="tg-results"></div>
+            </div>
+            <div class="tg-modal-actions">
+                <button class="tg-action-btn create" type="button">Создать канал</button>
+                <button class="tg-action-btn close" type="button" onclick="closeTgMenu()">Закрыть</button>
             </div>
         </div>
     </div>
@@ -222,36 +231,6 @@
             <div class="incoming-call-actions">
                 <button id="acceptCallBtn" class="call-action-btn accept">Accept</button>
                 <button id="rejectCallBtn" class="call-action-btn reject">Decline</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="tgAddOverlay" class="tg-overlay" style="display: none;">
-        <div class="tg-modal" role="dialog" aria-modal="true">
-            <div class="tg-modal-header">
-                <div class="tg-modal-title">Добавить Telegram-канал</div>
-                <button class="tg-modal-close" id="tgAddCloseBtn" type="button">✕</button>
-            </div>
-
-            <div class="tg-modal-tabs">
-                <button class="tg-modal-tab active" id="tgTabFindBtn" type="button">Найти</button>
-                <button class="tg-modal-tab" id="tgTabCreateBtn" type="button">Создать</button>
-            </div>
-
-            <div class="tg-modal-body">
-                <div id="tgFindPane">
-                    <div class="tg-modal-input">
-                        <input id="tgFindInput" type="text" placeholder="Например: bet" autocomplete="off" />
-                    </div>
-                    <div id="tgFindResults" class="tg-find-results"></div>
-                </div>
-
-                <div id="tgCreatePane" style="display: none;">
-                    <div class="tg-modal-input">
-                        <input id="tgCreateInput" type="text" placeholder="Название твоего канала" autocomplete="off" />
-                    </div>
-                    <button id="tgCreateSubmit" class="tg-primary-btn" type="button">Создать</button>
-                </div>
             </div>
         </div>
     </div>
